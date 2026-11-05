@@ -2,17 +2,14 @@ from dataclasses import dataclass
 
 from transformer.model import Transformer
 
+from grammer_corrector.data import load_agreement_dataset
 from grammer_corrector.inference import greedy_decode
 from grammer_corrector.tokenizer import decode, encode
 
 
-# Familiar words in combinations absent from the six training pairs.
-AGREEMENT_EVALUATION_PAIRS = (
-    ("He go outside.", "He goes outside."),
-    ("She study outside.", "She studies outside."),
-    ("He goes outside.", "He goes outside."),
-    ("She plays at home.", "She plays at home."),
-)
+# The original four examples come first in the fixed evaluation dataset.
+EVALUATION_PAIRS = tuple(load_agreement_dataset("eval"))
+AGREEMENT_EVALUATION_PAIRS = EVALUATION_PAIRS[:4]
 
 
 @dataclass(frozen=True)

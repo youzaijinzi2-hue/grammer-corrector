@@ -1,0 +1,23 @@
+{
+  "subjects": ["He", "She"],
+  "extra_subjects": ["My sister", "My brother", "The teacher", "The student", "Her friend", "His father"],
+  "verb_phrases": [
+    ["go", "goes", "to school", "basic"],
+    ["go", "goes", "home", "expanded"],
+    ["go", "goes", "outside", "experiment"],
+    ["study", "studies", "at home", "basic"],
+    ["study", "studies", "at school", "expanded"],
+    ["study", "studies", "outside", "experiment"],
+    ["play", "plays", "outside", "basic"],
+    ["play", "plays", "at school", "expanded"],
+    ["play", "plays", "at home", "experiment"],
+    ["walk", "walks", "to work", "experiment"],
+    ["walk", "walks", "to school", "experiment"],
+    ["read", "reads", "at home", "experiment"],
+    ["read", "reads", "outside", "experiment"],
+    ["work", "works", "outside", "experiment"],
+    ["work", "works", "at school", "experiment"],
+    ["cook", "cooks", "at school", "experiment"],
+    ["cook", "cooks", "at home", "experiment"]
+  ]
+}

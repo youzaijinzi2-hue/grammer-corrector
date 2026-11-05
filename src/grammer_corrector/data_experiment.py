@@ -1,5 +1,4 @@
 import argparse
-import random
 from pathlib import Path
 
 import torch
@@ -7,47 +6,20 @@ from transformer.model import Transformer
 
 from grammer_corrector.batching import make_batch
 from grammer_corrector.checkpoint import save_checkpoint
-from grammer_corrector.data import encode_pairs, generate_agreement_pairs
-from grammer_corrector.evaluation import AGREEMENT_EVALUATION_PAIRS, evaluate_pairs
+from grammer_corrector.data import encode_pairs, load_agreement_dataset
+from grammer_corrector.evaluation import (
+    AGREEMENT_EVALUATION_PAIRS,
+    EVALUATION_PAIRS,
+    evaluate_pairs,
+)
 from grammer_corrector.tokenizer import build_vocabulary, encode
 from grammer_corrector.training import train
 
-EXTRA_EVALUATION = (
-    ("He walk to work.", "He walks to work."),
-    ("She read at home.", "She reads at home."),
-    ("My sister work outside.", "My sister works outside."),
-    ("The teacher cook at school.", "The teacher cooks at school."),
-    ("My brother walks to work.", "My brother walks to work."),
-    ("The student reads at home.", "The student reads at home."),
-    ("The teacher works outside.", "The teacher works outside."),
-    ("My sister cooks at school.", "My sister cooks at school."),
-)
+EXTRA_EVALUATION = EVALUATION_PAIRS[len(AGREEMENT_EVALUATION_PAIRS):]
 
 
 def training_pool() -> list[tuple[str, str]]:
-    baseline = generate_agreement_pairs(expanded=True)
-    held_out = {text for pair in (*AGREEMENT_EVALUATION_PAIRS, *EXTRA_EVALUATION) for text in pair}
-    subjects = ("He", "She", "My sister", "My brother", "The teacher", "The student",
-                "Her friend", "His father")
-    phrases = (
-        ("go", "goes", "to school"), ("go", "goes", "home"),
-        ("go", "goes", "outside"), ("study", "studies", "at home"),
-        ("study", "studies", "at school"), ("study", "studies", "outside"),
-        ("play", "plays", "outside"), ("play", "plays", "at school"),
-        ("play", "plays", "at home"), ("walk", "walks", "to work"),
-        ("walk", "walks", "to school"), ("read", "reads", "at home"),
-        ("read", "reads", "outside"), ("work", "works", "outside"),
-        ("work", "works", "at school"), ("cook", "cooks", "at school"),
-        ("cook", "cooks", "at home"),
-    )
-    extras = []
-    for subject in subjects:
-        for base, third, complement in phrases:
-            pair = (f"{subject} {base} {complement}.", f"{subject} {third} {complement}.")
-            if pair not in baseline and held_out.isdisjoint(pair):
-                extras.append(pair)
-    random.Random(42).shuffle(extras)
-    return baseline + extras
+    return load_agreement_dataset("train")
 
 
 def main() -> None:
