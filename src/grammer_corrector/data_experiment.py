@@ -2,18 +2,16 @@ import argparse
 from pathlib import Path
 
 import torch
-from transformer.model import Transformer
 
-from grammer_corrector.batching import make_batch
 from grammer_corrector.checkpoint import save_checkpoint
-from grammer_corrector.data import encode_pairs, load_agreement_dataset
+from grammer_corrector.data import load_agreement_dataset
 from grammer_corrector.evaluation import (
     AGREEMENT_EVALUATION_PAIRS,
     EVALUATION_PAIRS,
     evaluate_pairs,
 )
-from grammer_corrector.tokenizer import build_vocabulary, encode
-from grammer_corrector.training import train
+from grammer_corrector.tokenizer import encode
+from grammer_corrector.training import fit_model
 
 EXTRA_EVALUATION = EVALUATION_PAIRS[len(AGREEMENT_EVALUATION_PAIRS):]
 
@@ -36,18 +34,7 @@ def main() -> None:
     for size in (12, 50, 100):
         corrections = pool[:size]
         pairs = corrections + [(target, target) for _, target in corrections]
-        vocabulary = build_vocabulary([text for pair in pairs for text in pair])
-        pad_id = vocabulary["<pad>"]
-        torch.manual_seed(seed)
-        model_config = dict(
-            src_vocab_size=len(vocabulary), tgt_vocab_size=len(vocabulary),
-            d_model=16, num_heads=2,
-            d_ff=32, num_layers=1, dropout=0.0, max_len=16,
-            src_pad_id=pad_id, tgt_pad_id=pad_id,
-        )
-        model = Transformer(**model_config)
-        optimizer = torch.optim.AdamW(model.parameters(), lr=0.01)
-        train(model, optimizer, make_batch(encode_pairs(pairs, vocabulary), pad_id), epochs)
+        model, model_config, vocabulary = fit_model(pairs, epochs=epochs, seed=seed)
         if args.save_dir is not None:
             filename = f"{size}-correction-{size}-identity-seed{seed}-epochs{epochs}.pt"
             path = args.save_dir / filename

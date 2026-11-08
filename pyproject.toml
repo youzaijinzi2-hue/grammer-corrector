@@ -11,6 +11,9 @@ dependencies = [
     "transformer-from-scratch",
 ]
 
+[project.scripts]
+grammer-corrector = "grammer_corrector.commands:main"
+
 [tool.uv.sources]
 transformer-from-scratch = { path = "../transformer-from-scratch", editable = true }
 

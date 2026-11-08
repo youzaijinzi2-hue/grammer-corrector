@@ -1,5 +1,7 @@
 import json
 from importlib.resources import files
+from importlib.resources.abc import Traversable
+from pathlib import Path
 
 from grammer_corrector.tokenizer import encode
 
@@ -16,11 +18,24 @@ def load_agreement_dataset(split: str) -> list[tuple[str, str]]:
     resource = files("grammer_corrector").joinpath(
         "resources", "datasets", "agreement", f"{split}.jsonl"
     )
+    return load_pairs(resource)
+
+
+def load_pairs(path: Path | Traversable) -> list[tuple[str, str]]:
+    """Read a JSONL dataset and report malformed rows with their line numbers."""
     pairs = []
-    with resource.open(encoding="utf-8") as stream:
-        for line in stream:
-            row = json.loads(line)
-            pairs.append((row["source"], row["target"]))
+    with path.open(encoding="utf-8") as stream:
+        for number, line in enumerate(stream, start=1):
+            try:
+                row = json.loads(line)
+                source, target = row["source"], row["target"]
+                if not all(isinstance(text, str) and text.strip() for text in (source, target)):
+                    raise ValueError
+            except (ValueError, KeyError, TypeError) as error:
+                raise ValueError(f"{path}:{number}: expected nonempty source and target strings") from error
+            pairs.append((source, target))
+    if not pairs:
+        raise ValueError(f"{path}: dataset is empty")
     return pairs
 
 
